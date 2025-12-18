@@ -25,7 +25,9 @@ This pipeline automatically:
 
 ## Prerequisites
 
-1. **PostgreSQL** - Install and run a PostgreSQL database
+1. **PostgreSQL Database** - Choose one option:
+   - Local PostgreSQL installation
+   - Cloud PostgreSQL (AWS RDS, Google Cloud SQL, Azure Database, etc.)
 2. **Python 3.11+** - Required for CocoIndex
 3. **API Keys** (required):
    - Tavily API key from [tavily.com](https://tavily.com) (free tier: 1,000 searches/month)
@@ -33,13 +35,54 @@ This pipeline automatically:
 
 ## Setup
 
-### 1. Install Dependencies
+### 1. Database Setup
+
+Choose **Option A** (Local) or **Option B** (Cloud):
+
+#### Option A: Local PostgreSQL
+
+```bash
+# Install PostgreSQL (macOS)
+brew install postgresql@15
+brew services start postgresql@15
+
+# Create database
+createdb competitive_intel
+
+# Your connection string:
+# postgresql://username:password@localhost:5432/competitive_intel
+```
+
+#### Option B: Cloud PostgreSQL (Google Cloud SQL / AWS RDS / Azure)
+
+**Google Cloud SQL Example**:
+1. Create PostgreSQL instance in [Google Cloud Console](https://console.cloud.google.com/sql)
+2. Note the **Public IP address** (e.g., `34.71.19.121`)
+3. Create database: `postgres` (or custom name)
+4. Set password for `postgres` user
+5. Allow your IP in Cloud SQL connections
+
+**Connection string format**:
+```
+postgresql://postgres:YOUR_PASSWORD@PUBLIC_IP:5432/postgres
+```
+
+💡 **Special characters in password?** URL-encode them:
+- `@` → `%40`
+- `#` → `%23`
+- `&` → `%26`
+
+Example: Password `Lucas@123` becomes `Lucas%40123`
+
+**AWS RDS / Azure**: Same format, just use your cloud database endpoint instead of public IP.
+
+### 2. Install Dependencies
 
 ```bash
 pip install -e .
 ```
 
-### 2. Configure Environment
+### 3. Configure Environment
 
 Copy the example environment file and add your credentials:
 
@@ -48,20 +91,31 @@ cp .env.example .env
 ```
 
 Edit `.env` and set:
-- `DATABASE_URL` - Your PostgreSQL connection string
+- `DATABASE_URL` - Your PostgreSQL connection string (from Step 1)
 - `COCOINDEX_DATABASE_URL` - Same as DATABASE_URL (required by CocoIndex)
-- `OPENAI_API_KEY` - OpenRouter API key for LLM extraction (get from [openrouter.ai](https://openrouter.ai))
-- `TAVILY_API_KEY` - For AI-powered web search
+- `OPENAI_API_KEY` - OpenRouter API key from [openrouter.ai](https://openrouter.ai)
+- `TAVILY_API_KEY` - Tavily API key from [tavily.com](https://tavily.com)
 - `COMPETITORS` - Comma-separated list of companies to track
 - `SEARCH_DAYS_BACK` - How many days back to search (default: 7)
 
-Example:
+**Example (Local PostgreSQL)**:
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/competitive_intel
 COCOINDEX_DATABASE_URL=postgresql://user:password@localhost:5432/competitive_intel
 OPENAI_API_KEY=sk-or-v1-...
 TAVILY_API_KEY=tvly-...
-COMPETITORS=OpenAI,Anthropic,Google AI,Meta AI,Mistral AI,Cohere
+COMPETITORS=OpenAI,Anthropic,Google AI,Meta AI,Mistral AI
+REFRESH_INTERVAL_SECONDS=3600
+SEARCH_DAYS_BACK=7
+```
+
+**Example (Google Cloud SQL)**:
+```env
+DATABASE_URL=postgresql://postgres:Lucas%40123@34.71.19.121:5432/postgres
+COCOINDEX_DATABASE_URL=postgresql://postgres:Lucas%40123@34.71.19.121:5432/postgres
+OPENAI_API_KEY=sk-or-v1-...
+TAVILY_API_KEY=tvly-...
+COMPETITORS=Apple,Google,Microsoft,Amazon,Meta
 REFRESH_INTERVAL_SECONDS=3600
 SEARCH_DAYS_BACK=7
 ```
