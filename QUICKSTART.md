@@ -20,7 +20,7 @@ pip install -e .
 ## 2. Run the Sample Demo
 
 ```bash
-python3 local_intel.py --dashboard --slug demo
+python3 competitive_intel.py sample --dashboard --slug demo
 ```
 
 This reads `watchlist.json` and `data/sample_articles.json`, then writes:
@@ -33,7 +33,7 @@ This reads `watchlist.json` and `data/sample_articles.json`, then writes:
 ## 3. Start the MCP Tool Server
 
 ```bash
-python3 mcp_server.py
+python3 competitive_intel.py mcp
 ```
 
 For MCP-capable clients, copy `mcp-config.example.json` and replace the
@@ -91,7 +91,11 @@ TAVILY_API_KEY=tvly-your-tavily-key
 Populate CocoIndex/Postgres:
 
 ```bash
-cocoindex update main -f
+python3 competitive_intel.py live \
+  --competitors "Apple,Microsoft" \
+  --focus "product launch, partnership" \
+  --max-results 2 \
+  --slug apple-microsoft-live
 ```
 
 Then agents can call:
@@ -101,7 +105,8 @@ Then agents can call:
 - `get_trending_competitors(mode="cocoindex", days=7)`
 
 The `.env` competitor list is only a default. Agents can pass `competitors` on
-each live run to target any market or peer set.
+each live run to target any market or peer set. Human users can pass
+`--competitors` to `competitive_intel.py live`.
 
 ## Troubleshooting
 
@@ -144,4 +149,4 @@ MCP server requires `mcp[cli]>=1.27,<2`.
 
 ---
 
-**Ready to start?** Run `python3 local_intel.py --dashboard --slug demo`.
+**Ready to start?** Run `python3 competitive_intel.py sample --dashboard --slug demo`.

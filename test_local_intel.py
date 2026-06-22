@@ -2,9 +2,11 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import local_intel
 import agent_demo
+import competitive_intel
 import env_utils
 import mcp_server
 import providers
@@ -106,6 +108,69 @@ class LocalIntelTests(unittest.TestCase):
         self.assertEqual(updated["MAX_RESULTS_PER_COMPETITOR"], "3")
         self.assertEqual(updated["SEARCH_DAYS_BACK"], "14")
         self.assertEqual(updated["REFRESH_INTERVAL_SECONDS"], "120")
+
+    def test_user_cli_focus_builds_event_query(self):
+        query = competitive_intel.focus_to_event_query(
+            "funding, partnerships, product launches"
+        )
+
+        self.assertEqual(query, "(funding OR partnerships OR product launches)")
+
+    def test_user_cli_sample_generates_dashboard(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args = competitive_intel.build_parser().parse_args(
+                ["sample", "--output-dir", tmp, "--slug", "cli-sample", "--dashboard"]
+            )
+            exit_code = args.func(args)
+
+            self.assertEqual(exit_code, 0)
+            self.assertTrue((Path(tmp) / "brief-cli-sample.md").exists())
+            self.assertTrue((Path(tmp) / "dashboard-cli-sample.html").exists())
+
+    def test_user_cli_live_passes_competitor_arguments(self):
+        fake_result = {
+            "ok": True,
+            "update": {
+                "effective_config": {
+                    "competitors": "Apple,Microsoft",
+                    "event_query": "(product launch OR partnership)",
+                    "max_results_per_competitor": "2",
+                }
+            },
+            "trends": {"results": []},
+            "search": {"matched_events": 0},
+            "brief": {"path": "/tmp/brief.md"},
+            "dashboard": {"path": "/tmp/dashboard.html"},
+        }
+        with mock.patch(
+            "competitive_intel.live_demo_check.run_check", return_value=fake_result
+        ) as run_check:
+            args = competitive_intel.build_parser().parse_args(
+                [
+                    "live",
+                    "--competitors",
+                    "Apple,Microsoft",
+                    "--focus",
+                    "product launch, partnership",
+                    "--max-results",
+                    "2",
+                    "--search-days-back",
+                    "14",
+                    "--slug",
+                    "apple-microsoft",
+                ]
+            )
+            exit_code = args.func(args)
+
+        self.assertEqual(exit_code, 0)
+        run_check.assert_called_once_with(
+            slug="apple-microsoft",
+            output_dir=None,
+            competitors="Apple,Microsoft",
+            event_query="(product launch OR partnership)",
+            max_results=2,
+            search_days_back=14,
+        )
 
     def test_agent_demo_generates_transcript(self):
         with tempfile.TemporaryDirectory() as tmp:

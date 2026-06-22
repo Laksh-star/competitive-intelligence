@@ -32,7 +32,7 @@ pip install -e .
 Run the local analyst workflow:
 
 ```bash
-python3 local_intel.py --dashboard --slug demo
+python3 competitive_intel.py sample --dashboard --slug demo
 ```
 
 Run the deterministic agent transcript:
@@ -48,7 +48,7 @@ brief/dashboard" without needing a separate MCP client.
 Start the MCP server:
 
 ```bash
-python3 mcp_server.py
+python3 competitive_intel.py mcp
 ```
 
 Example agent prompts:
@@ -107,16 +107,14 @@ MAX_RESULTS_PER_COMPETITOR=10
 EVENT_QUERY=(funding OR partnership OR product launch OR acquisition OR executive hire)
 ```
 
-Populate the CocoIndex tables:
+Run the full live check for a specific market:
 
 ```bash
-cocoindex update main -f
-```
-
-Or run the full live check:
-
-```bash
-python3 live_demo_check.py --slug live-cocoindex
+python3 competitive_intel.py live \
+  --slug apple-microsoft-live \
+  --competitors "Apple,Microsoft" \
+  --max-results 2 \
+  --focus "product launch, partnership"
 ```
 
 Then ask an agent to call:
@@ -135,9 +133,9 @@ override it per live run with `competitors="Apple,Microsoft"` or
 One-off CLI check for another market:
 
 ```bash
-python3 live_demo_check.py \
-  --slug apple-microsoft-live \
-  --competitors "Apple,Microsoft" \
+python3 competitive_intel.py live \
+  --slug perplexity-glean-live \
+  --competitors "Perplexity,Glean" \
   --max-results 2 \
-  --event-query "(product launch OR partnership)"
+  --focus "funding, partnerships, product launches"
 ```

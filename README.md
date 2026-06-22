@@ -43,7 +43,7 @@ You can now run a no-credential analyst workflow before setting up Tavily,
 OpenRouter, CocoIndex, or PostgreSQL:
 
 ```bash
-python3 local_intel.py --dashboard
+python3 competitive_intel.py sample --dashboard --slug demo
 ```
 
 This reads:
@@ -59,17 +59,30 @@ It writes a run bundle to `reports/`:
 Use your own article file by matching the sample JSON schema:
 
 ```bash
-python3 local_intel.py \
+python3 competitive_intel.py sample \
   --config watchlist.json \
   --input my_articles.json \
   --output-dir reports \
   --dashboard
 ```
 
+For a live one-off run, pass competitors at runtime instead of editing `.env`:
+
+```bash
+python3 competitive_intel.py live \
+  --competitors "Apple,Microsoft" \
+  --focus "product launch, partnership" \
+  --max-results 2 \
+  --slug apple-microsoft-live
+```
+
+`.env` holds credentials and fallback defaults. The current competitor set
+should usually come from CLI args or MCP tool args.
+
 Start the MCP server so other agents can call the tools:
 
 ```bash
-python3 mcp_server.py
+python3 competitive_intel.py mcp
 ```
 
 Or configure an MCP-capable client from `mcp-config.example.json`. Replace the
@@ -249,6 +262,16 @@ Example live calls:
 `COMPETITORS` in `.env` is only the default. MCP callers can override it per
 run with `competitors`, either as a comma-separated string or a JSON array, so
 agents can switch from AI labs to any market category without editing files.
+
+Human-friendly equivalent:
+
+```bash
+python3 competitive_intel.py live \
+  --competitors "Perplexity,Glean" \
+  --focus "funding, partnerships, product launches" \
+  --max-results 2 \
+  --slug perplexity-glean-live
+```
 
 ### 4. Verify It's Working
 
@@ -462,6 +485,7 @@ Tavily is an **AI-native search engine** designed specifically for AI agents and
 ```
 competitive-intelligence/
 ├── main.py                    # Core pipeline definition
+├── competitive_intel.py       # User-friendly sample/live/MCP CLI
 ├── local_intel.py             # Local analyst workflow, reports, and dashboard
 ├── agent_demo.py              # Deterministic agent transcript demo
 ├── providers.py               # Local and CocoIndex-backed data providers
