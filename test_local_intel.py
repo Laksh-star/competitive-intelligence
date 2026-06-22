@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 import local_intel
+import agent_demo
 import mcp_server
 import providers
 
@@ -80,6 +81,18 @@ class LocalIntelTests(unittest.TestCase):
         self.assertTrue(Path(brief["path"]).exists())
         self.assertTrue(Path(dashboard["path"]).exists())
         self.assertFalse(guarded_live["ok"])
+
+    def test_agent_demo_generates_transcript(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = agent_demo.run_demo(output_dir=Path(tmp), slug="agent-test")
+
+            transcript_path = Path(result["transcript_path"])
+            self.assertTrue(transcript_path.exists())
+            transcript = transcript_path.read_text(encoding="utf-8")
+            self.assertIn("Tool Call: analyze_saved_articles", transcript)
+            self.assertIn("Agent Summary", transcript)
+            self.assertTrue(Path(result["brief"]["path"]).exists())
+            self.assertTrue(Path(result["dashboard"]["path"]).exists())
 
 
 if __name__ == "__main__":

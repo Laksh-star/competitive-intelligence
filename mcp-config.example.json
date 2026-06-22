@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "competitive-intelligence": {
+      "command": "/ABSOLUTE/PATH/TO/competitive-intelligence/.venv/bin/python",
+      "args": [
+        "/ABSOLUTE/PATH/TO/competitive-intelligence/mcp_server.py"
+      ],
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}

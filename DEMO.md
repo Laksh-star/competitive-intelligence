@@ -35,6 +35,16 @@ Run the local analyst workflow:
 python3 local_intel.py --dashboard --slug demo
 ```
 
+Run the deterministic agent transcript:
+
+```bash
+python3 agent_demo.py --slug demo-agent
+```
+
+This creates `reports/demo-agent-transcript.md` plus generated brief and
+dashboard artifacts. It is the fastest way to show "agent asks -> tool calls ->
+brief/dashboard" without needing a separate MCP client.
+
 Start the MCP server:
 
 ```bash
@@ -52,6 +62,29 @@ Direct smoke check without an MCP client:
 
 ```bash
 python3 -m unittest test_local_intel.py
+```
+
+## MCP Client Config
+
+Use `mcp-config.example.json` as a template for MCP-capable clients. Replace
+`/ABSOLUTE/PATH/TO/competitive-intelligence` with this repo's absolute path.
+
+For this machine, the command shape is:
+
+```json
+{
+  "mcpServers": {
+    "competitive-intelligence": {
+      "command": "/Users/ln-mini/Documents/Medley projects/competitive-intelligence/.venv/bin/python",
+      "args": [
+        "/Users/ln-mini/Documents/Medley projects/competitive-intelligence/mcp_server.py"
+      ],
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}
 ```
 
 ## Live CocoIndex Demo

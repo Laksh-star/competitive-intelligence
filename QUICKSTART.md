@@ -36,6 +36,9 @@ This reads `watchlist.json` and `data/sample_articles.json`, then writes:
 python3 mcp_server.py
 ```
 
+For MCP-capable clients, copy `mcp-config.example.json` and replace the
+placeholder paths with this repo's absolute path.
+
 Other agents can call tools such as:
 
 - `analyze_saved_articles`
@@ -52,7 +55,17 @@ Example agent prompts:
 - "Which competitors are trending?"
 - "Create a board-ready intelligence brief."
 
-## 4. Test Locally
+## 4. Run the Deterministic Agent Demo
+
+```bash
+python3 agent_demo.py --slug demo-agent
+```
+
+This writes a transcript to `reports/demo-agent-transcript.md` and generates
+brief/dashboard artifacts. Use this when you want a repeatable demo without a
+separate MCP client.
+
+## 5. Test Locally
 
 ```bash
 python3 -m unittest test_local_intel.py

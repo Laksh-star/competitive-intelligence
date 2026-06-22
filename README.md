@@ -72,6 +72,10 @@ Start the MCP server so other agents can call the tools:
 python3 mcp_server.py
 ```
 
+Or configure an MCP-capable client from `mcp-config.example.json`. Replace the
+placeholder paths with this repo's absolute path and point the command at your
+`.venv/bin/python`.
+
 Available tools:
 - `analyze_saved_articles`
 - `search_events`
@@ -85,6 +89,15 @@ Example agent prompts:
 - "Search events about enterprise customers."
 - "Which competitors are trending?"
 - "Create a board-ready competitive intelligence brief."
+
+Run the deterministic agent demo transcript:
+
+```bash
+python3 agent_demo.py --slug demo-agent
+```
+
+This creates `reports/demo-agent-transcript.md` along with briefing and
+dashboard artifacts.
 
 Run the local and MCP smoke tests:
 
@@ -446,8 +459,10 @@ Tavily is an **AI-native search engine** designed specifically for AI agents and
 competitive-intelligence/
 ├── main.py                    # Core pipeline definition
 ├── local_intel.py             # Local analyst workflow, reports, and dashboard
+├── agent_demo.py              # Deterministic agent transcript demo
 ├── providers.py               # Local and CocoIndex-backed data providers
 ├── mcp_server.py              # Agent-facing MCP tool server
+├── mcp-config.example.json    # MCP client configuration template
 ├── DEMO.md                    # Agent-first CocoIndex demo script
 ├── watchlist.json             # Editable local watchlist
 ├── watchlist.example.json     # Local watchlist and scoring configuration
