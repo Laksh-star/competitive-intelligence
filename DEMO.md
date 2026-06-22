@@ -89,11 +89,17 @@ For this machine, the command shape is:
 
 ## Live CocoIndex Demo
 
+Start local Postgres:
+
+```bash
+docker compose up -d postgres
+```
+
 Configure `.env`:
 
 ```env
-COCOINDEX_DATABASE_URL=postgresql://user:password@host:5432/competitive_intel
-DATABASE_URL=postgresql://user:password@host:5432/competitive_intel
+COCOINDEX_DATABASE_URL=postgresql://competitive_intel:competitive_intel@localhost:54321/competitive_intel
+DATABASE_URL=postgresql://competitive_intel:competitive_intel@localhost:54321/competitive_intel
 OPENAI_API_KEY=sk-or-v1-...
 TAVILY_API_KEY=tvly-...
 COMPETITORS=OpenAI,Anthropic,Google AI
@@ -105,6 +111,12 @@ Populate the CocoIndex tables:
 
 ```bash
 cocoindex update main -f
+```
+
+Or run the full live check:
+
+```bash
+python3 live_demo_check.py --slug live-cocoindex
 ```
 
 Then ask an agent to call:

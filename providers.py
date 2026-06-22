@@ -6,7 +6,10 @@ import os
 from pathlib import Path
 from typing import Any
 
+import env_utils
 import local_intel
+
+env_utils.load_env()
 
 
 PROJECT_ROOT = Path(__file__).parent

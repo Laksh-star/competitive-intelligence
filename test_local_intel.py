@@ -5,6 +5,7 @@ from pathlib import Path
 
 import local_intel
 import agent_demo
+import env_utils
 import mcp_server
 import providers
 
@@ -93,6 +94,18 @@ class LocalIntelTests(unittest.TestCase):
             self.assertIn("Agent Summary", transcript)
             self.assertTrue(Path(result["brief"]["path"]).exists())
             self.assertTrue(Path(result["dashboard"]["path"]).exists())
+
+    def test_load_env_does_not_overwrite_existing_values(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            env_path = Path(tmp) / ".env"
+            env_path.write_text("EXISTING=value_from_file\nNEW_VALUE=loaded\n", encoding="utf-8")
+            import os
+
+            os.environ["EXISTING"] = "already_set"
+            env_utils.load_env(env_path)
+
+            self.assertEqual(os.environ["EXISTING"], "already_set")
+            self.assertEqual(os.environ["NEW_VALUE"], "loaded")
 
 
 if __name__ == "__main__":

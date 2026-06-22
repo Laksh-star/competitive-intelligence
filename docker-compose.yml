@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: competitive-intel-postgres
+    environment:
+      POSTGRES_DB: competitive_intel
+      POSTGRES_USER: competitive_intel
+      POSTGRES_PASSWORD: competitive_intel
+    ports:
+      - "54321:5432"
+    volumes:
+      - competitive_intel_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U competitive_intel -d competitive_intel"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  competitive_intel_pgdata:

@@ -5,9 +5,14 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
+from pathlib import Path
 from typing import Any
 
+import env_utils
 import providers
+
+env_utils.load_env()
 
 
 try:
@@ -192,7 +197,8 @@ def run_cocoindex_update(live: bool = False, watch: bool = False, force: bool = 
             "message": "Live CocoIndex mode requires database and API credentials.",
         }
 
-    command = ["cocoindex", "update"]
+    cocoindex_bin = Path(sys.executable).with_name("cocoindex")
+    command = [str(cocoindex_bin) if cocoindex_bin.exists() else "cocoindex", "update"]
     if watch:
         command.extend(["-L", "main.py"])
     else:

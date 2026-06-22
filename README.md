@@ -463,6 +463,8 @@ competitive-intelligence/
 ├── providers.py               # Local and CocoIndex-backed data providers
 ├── mcp_server.py              # Agent-facing MCP tool server
 ├── mcp-config.example.json    # MCP client configuration template
+├── docker-compose.yml         # Local Postgres for live CocoIndex demos
+├── live_demo_check.py         # Credential-gated live CocoIndex smoke check
 ├── DEMO.md                    # Agent-first CocoIndex demo script
 ├── watchlist.json             # Editable local watchlist
 ├── watchlist.example.json     # Local watchlist and scoring configuration

@@ -9,6 +9,7 @@ funding rounds, key hires, and strategic moves.
 import cocoindex
 import os
 import functools
+import re
 from psycopg_pool import ConnectionPool
 from datetime import timedelta, datetime
 from typing import Any, AsyncIterator, NamedTuple
@@ -178,6 +179,14 @@ class TavilySearchConnector:
 # Pipeline Definition
 # ============================================================================
 
+def _scope_field_name(prefix: str, value: str) -> str:
+    """Build a CocoIndex-safe scope field name from user-provided text."""
+    clean = re.sub(r"\W+", "_", value.strip())
+    if not clean or clean[0].isdigit():
+        clean = f"_{clean}"
+    return f"{prefix}_{clean}"
+
+
 @cocoindex.flow_def(name="CompetitiveIntelligence")
 def competitive_intelligence_flow(
     flow_builder: cocoindex.FlowBuilder, data_scope: cocoindex.DataScope
@@ -196,9 +205,10 @@ def competitive_intelligence_flow(
 
     # Add Tavily search source for each competitor
     for competitor in competitors:
-        data_scope[f"articles_{competitor.strip()}"] = flow_builder.add_source(
+        competitor_clean = competitor.strip()
+        data_scope[_scope_field_name("articles", competitor_clean)] = flow_builder.add_source(
             TavilySearchSource(
-                competitor=competitor.strip(),
+                competitor=competitor_clean,
                 days_back=search_days_back,
                 max_results=max_results,
                 query_terms=query_terms,
@@ -212,7 +222,7 @@ def competitive_intelligence_flow(
     # Process each competitor's articles
     for competitor in competitors:
         competitor_clean = competitor.strip()
-        articles = data_scope[f"articles_{competitor_clean}"]
+        articles = data_scope[_scope_field_name("articles", competitor_clean)]
 
         with articles.row() as article:
             # Extract competitive events from articles using GPT-4o-mini via OpenRouter
@@ -264,7 +274,7 @@ def competitive_intelligence_flow(
     events_index.export(
         "intel_events",
         cocoindex.targets.Postgres(),
-        primary_key_fields=["article_id", "event_type", "competitor"],
+        primary_key_fields=["article_id", "event_type", "competitor", "description"],
     )
 
 
