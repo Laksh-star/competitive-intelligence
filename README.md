@@ -4,11 +4,16 @@
 [![CocoIndex](https://img.shields.io/badge/CocoIndex-0.3.9+-green.svg)](https://cocoindex.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Track competitor mentions across the web using AI-powered search and LLM extraction. Automatically monitors competitors, extracts competitive intelligence events, and stores structured data in PostgreSQL for analysis.
+Agent-first competitive intelligence demo powered by saved article analysis,
+MCP tools, and an optional live CocoIndex pipeline. The sample demo runs without
+credentials; the live mode uses Tavily, LLM extraction, CocoIndex, and Postgres.
 
 ## What This Does
 
 This pipeline automatically:
+- **Exposes MCP tools** so agents can search events, find trends, and create briefs
+- **Runs locally without credentials** for reliable analyst demos using saved article JSON
+- **Generates briefings and dashboards** in Markdown, JSON, CSV, and static HTML
 - **Searches** the web using Tavily AI (AI-native search engine optimized for agents)
 - **Extracts** competitive intelligence events using DeepSeek LLM analysis:
   - Product launches and feature releases
@@ -25,15 +30,71 @@ This pipeline automatically:
 
 ## Prerequisites
 
-1. **PostgreSQL Database** - Choose one option:
-   - Local PostgreSQL installation
-   - Cloud PostgreSQL (AWS RDS, Google Cloud SQL, Azure Database, etc.)
-2. **Python 3.11+** - Required for CocoIndex
-3. **API Keys** (required):
+1. **Python 3.11+**
+2. **For sample mode**: no credentials required
+3. **For live CocoIndex mode**:
+   - PostgreSQL database
    - Tavily API key from [tavily.com](https://tavily.com) (free tier: 1,000 searches/month)
    - OpenRouter API key for LLM extraction via GPT-4o-mini (cost-effective: ~$0.15 per 1M input tokens, ~$0.60 per 1M output tokens)
 
-## Setup
+## Try It Locally First
+
+You can now run a no-credential analyst workflow before setting up Tavily,
+OpenRouter, CocoIndex, or PostgreSQL:
+
+```bash
+python3 local_intel.py --dashboard
+```
+
+This reads:
+- `watchlist.json` - editable competitors, aliases, event categories, and scoring terms
+- `data/sample_articles.json` - saved article records to analyze
+
+It writes a run bundle to `reports/`:
+- `brief-*.md` - analyst-readable intelligence brief
+- `intel-events-*.json` - structured event export
+- `intel-events-*.csv` - spreadsheet-friendly export
+- `dashboard-*.html` - static dashboard with search and significance filters
+
+Use your own article file by matching the sample JSON schema:
+
+```bash
+python3 local_intel.py \
+  --config watchlist.json \
+  --input my_articles.json \
+  --output-dir reports \
+  --dashboard
+```
+
+Start the MCP server so other agents can call the tools:
+
+```bash
+python3 mcp_server.py
+```
+
+Available tools:
+- `analyze_saved_articles`
+- `search_events`
+- `get_trending_competitors`
+- `create_brief`
+- `create_dashboard`
+- `run_cocoindex_update`
+
+Example agent prompts:
+- "Analyze the saved articles and create a dashboard."
+- "Search events about enterprise customers."
+- "Which competitors are trending?"
+- "Create a board-ready competitive intelligence brief."
+
+Run the local and MCP smoke tests:
+
+```bash
+python3 -m unittest test_local_intel.py
+```
+
+See [DEMO.md](DEMO.md) for the full agent-first demo script.
+
+## Production Setup
 
 ### 1. Database Setup
 
@@ -97,6 +158,8 @@ Edit `.env` and set:
 - `TAVILY_API_KEY` - Tavily API key from [tavily.com](https://tavily.com)
 - `COMPETITORS` - Comma-separated list of companies to track
 - `SEARCH_DAYS_BACK` - How many days back to search (default: 7)
+- `MAX_RESULTS_PER_COMPETITOR` - Articles fetched per competitor
+- `EVENT_QUERY` - Search terms used for event discovery
 
 **Example (Local PostgreSQL)**:
 ```env
@@ -107,6 +170,8 @@ TAVILY_API_KEY=tvly-...
 COMPETITORS=OpenAI,Anthropic,Google AI,Meta AI,Mistral AI
 REFRESH_INTERVAL_SECONDS=3600
 SEARCH_DAYS_BACK=7
+MAX_RESULTS_PER_COMPETITOR=10
+EVENT_QUERY=(funding OR partnership OR product launch OR acquisition OR executive hire)
 ```
 
 **Example (Google Cloud SQL)**:
@@ -118,6 +183,8 @@ TAVILY_API_KEY=tvly-...
 COMPETITORS=Apple,Google,Microsoft,Amazon,Meta
 REFRESH_INTERVAL_SECONDS=3600
 SEARCH_DAYS_BACK=7
+MAX_RESULTS_PER_COMPETITOR=10
+EVENT_QUERY=(funding OR partnership OR product launch OR acquisition OR executive hire)
 ```
 
 ### 3. Run the Pipeline
@@ -149,6 +216,22 @@ Continuous monitoring (live mode):
 ```bash
 cocoindex update -L main.py
 ```
+
+**Option C: Agent Tool Mode**
+
+Run the MCP server and ask an MCP-capable agent to use local mode or live
+CocoIndex mode:
+
+```bash
+python3 mcp_server.py
+```
+
+Example live calls:
+- `search_events(mode="cocoindex", competitor="Anthropic")`
+- `get_trending_competitors(mode="cocoindex", days=7)`
+- `create_brief(mode="cocoindex")`
+- `create_dashboard(mode="cocoindex")`
+- `run_cocoindex_update(live=true)`
 
 ### 4. Verify It's Working
 
@@ -246,14 +329,13 @@ flow.add_source(
 
 ### Customize Search Queries
 
-Modify the search query in TavilySearchSource (line ~65):
+Set `EVENT_QUERY` in `.env`:
 
-```python
-search_query = (
-    f"{self.competitor} AND "
-    f"(funding OR partnership OR product launch OR acquisition OR executive hire OR regulatory)"
-)
+```env
+EVENT_QUERY=(funding OR partnership OR product launch OR acquisition OR executive hire OR regulatory)
 ```
+
+The interactive CLI also writes this value when you choose an event focus.
 
 ### Adjust Competitors List
 
@@ -337,6 +419,7 @@ Visit the CocoIndex documentation for CocoInsight setup.
 - **Weighted Scoring**: High-significance events = 3 points, medium = 2, low = 1
 - **Relational Queries**: Join articles with events for full context
 - **Real-time Monitoring**: Continuous mode refreshes every hour (configurable)
+- **Local Analyst Mode**: Run saved articles through a lightweight scorer with no external services
 
 ## Why Tavily?
 
@@ -362,8 +445,16 @@ Tavily is an **AI-native search engine** designed specifically for AI agents and
 ```
 competitive-intelligence/
 ├── main.py                    # Core pipeline definition
+├── local_intel.py             # Local analyst workflow, reports, and dashboard
+├── providers.py               # Local and CocoIndex-backed data providers
+├── mcp_server.py              # Agent-facing MCP tool server
+├── DEMO.md                    # Agent-first CocoIndex demo script
+├── watchlist.json             # Editable local watchlist
+├── watchlist.example.json     # Local watchlist and scoring configuration
+├── data/sample_articles.json  # Demo input records for local analysis
 ├── run_interactive.py         # Interactive CLI for easy setup
 ├── test_results.py           # Validation and testing script
+├── test_local_intel.py       # Local analyst workflow tests
 ├── generate_report.py        # Report generation tool
 ├── clear_and_run.py          # Fresh data testing utility
 ├── pyproject.toml            # Project dependencies

@@ -117,7 +117,7 @@ def get_run_mode():
 
     return "once", None
 
-def update_env_file(competitors, days_back):
+def update_env_file(competitors, days_back, search_query, max_results):
     """Update .env file with user choices."""
     env_file = Path(__file__).parent / ".env"
 
@@ -130,38 +130,28 @@ def update_env_file(competitors, days_back):
     with open(env_file, 'r') as f:
         lines = f.readlines()
 
-    # Update competitors and days_back
+    seen_keys = set()
+    updates = {
+        "COMPETITORS": competitors,
+        "SEARCH_DAYS_BACK": days_back,
+        "EVENT_QUERY": search_query,
+        "MAX_RESULTS_PER_COMPETITOR": max_results,
+    }
+
     with open(env_file, 'w') as f:
         for line in lines:
-            if line.startswith('COMPETITORS='):
-                f.write(f'COMPETITORS={competitors}\n')
-            elif line.startswith('SEARCH_DAYS_BACK='):
-                f.write(f'SEARCH_DAYS_BACK={days_back}\n')
+            key = line.split("=", 1)[0] if "=" in line else None
+            if key in updates:
+                f.write(f"{key}={updates[key]}\n")
+                seen_keys.add(key)
             else:
                 f.write(line)
 
-def create_custom_main(search_query, max_results):
-    """Create a temporary main file with custom search query."""
-    main_file = Path(__file__).parent / "main.py"
-
-    with open(main_file, 'r') as f:
-        content = f.read()
-
-    # Update search query
-    old_query = 'f"{self._spec.competitor} AND "\n            f"(funding OR partnership OR product launch OR acquisition OR executive hire)"'
-    new_query = f'f"{{self._spec.competitor}} AND "\n            f"{search_query}"'
-
-    content = content.replace(old_query, new_query)
-
-    # Update max_results default
-    content = content.replace('max_results: int = 10', f'max_results: int = {max_results}')
-
-    # Write to temporary file
-    temp_main = Path(__file__).parent / "main_custom.py"
-    with open(temp_main, 'w') as f:
-        f.write(content)
-
-    return temp_main
+        missing = [key for key in updates if key not in seen_keys]
+        if missing:
+            f.write("\n# Interactive competitive intelligence settings\n")
+            for key in missing:
+                f.write(f"{key}={updates[key]}\n")
 
 def run_pipeline(mode, interval=None):
     """Run the cocoindex pipeline."""
@@ -232,13 +222,7 @@ def main():
 
     # Update configuration
     print("\n⚙️  Updating configuration...")
-    update_env_file(competitors, days_back)
-
-    # Note: For now, we'll use the default main.py
-    # In a production version, you'd modify main.py with the custom search query
-    if search_query != "(funding OR partnership OR product launch OR acquisition OR executive hire)":
-        print("   ℹ️  Custom search queries require editing main.py:105-108")
-        print(f"      Change to: {search_query}")
+    update_env_file(competitors, days_back, search_query, max_results)
 
     # Run pipeline
     try:

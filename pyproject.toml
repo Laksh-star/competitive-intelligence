@@ -5,6 +5,7 @@ description = "Track competitor mentions across news sites, blogs, and social me
 requires-python = ">=3.11"
 dependencies = [
     "cocoindex>=0.3.9",
+    "mcp[cli]>=1.27,<2",
     "tavily-python>=0.3.0",  # AI-native search API
     "psycopg[binary,pool]",
     "psycopg-pool",  # Connection pooling for query handlers

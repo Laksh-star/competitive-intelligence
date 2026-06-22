@@ -72,6 +72,7 @@ class TavilySearchSource(SourceSpec):
     competitor: str
     days_back: int = 7
     max_results: int = 10
+    query_terms: str = "(funding OR partnership OR product launch OR acquisition OR executive hire)"
 
 
 @source_connector(
@@ -104,7 +105,7 @@ class TavilySearchConnector:
         # Construct search query focused on competitive intelligence events
         search_query = (
             f"{self._spec.competitor} AND "
-            f"(funding OR partnership OR product launch OR acquisition OR executive hire)"
+            f"{self._spec.query_terms}"
         )
 
         # Initialize Tavily client
@@ -139,7 +140,7 @@ class TavilySearchConnector:
     ) -> PartialSourceRowData[_Article]:
         """Get a specific article by URL."""
         # Re-search to get the article (Tavily doesn't have a get-by-URL API)
-        search_query = f"{self._spec.competitor} AND (funding OR partnership OR product launch OR acquisition OR executive hire)"
+        search_query = f"{self._spec.competitor} AND {self._spec.query_terms}"
 
         client = TavilyClient(api_key=self._api_key)
         response = client.search(
@@ -187,6 +188,11 @@ def competitive_intelligence_flow(
     competitors = os.getenv("COMPETITORS", "OpenAI,Anthropic").split(",")
     refresh_interval = int(os.getenv("REFRESH_INTERVAL_SECONDS", "3600"))
     search_days_back = int(os.getenv("SEARCH_DAYS_BACK", "7"))
+    max_results = int(os.getenv("MAX_RESULTS_PER_COMPETITOR", "10"))
+    query_terms = os.getenv(
+        "EVENT_QUERY",
+        "(funding OR partnership OR product launch OR acquisition OR executive hire)",
+    )
 
     # Add Tavily search source for each competitor
     for competitor in competitors:
@@ -194,7 +200,8 @@ def competitive_intelligence_flow(
             TavilySearchSource(
                 competitor=competitor.strip(),
                 days_back=search_days_back,
-                max_results=10,
+                max_results=max_results,
+                query_terms=query_terms,
             ),
             refresh_interval=timedelta(seconds=refresh_interval),
         )
@@ -352,7 +359,7 @@ def get_trending_competitors(days: int = 7) -> cocoindex.QueryOutput:
                     array_agg(DISTINCT e.event_type) as events
                 FROM {events_table} e
                 JOIN {articles_table} a ON e.article_id = a.id
-                WHERE a.published_at >= NOW() - INTERVAL '%s days'
+                WHERE a.published_at >= NOW() - (%s * INTERVAL '1 day')
                 GROUP BY e.competitor
                 ORDER BY weighted_score DESC
                 """,

@@ -1,0 +1,36 @@
+{
+  "industry": "AI application platforms",
+  "analyst_company": "Your Company",
+  "competitors": [
+    {
+      "name": "OpenAI",
+      "aliases": ["ChatGPT", "OpenAI API"],
+      "priority": "high"
+    },
+    {
+      "name": "Anthropic",
+      "aliases": ["Claude"],
+      "priority": "high"
+    },
+    {
+      "name": "Google DeepMind",
+      "aliases": ["Gemini", "Google AI"],
+      "priority": "medium"
+    }
+  ],
+  "event_types": {
+    "product_launch": ["launch", "released", "introduced", "announced", "rolled out", "debuted"],
+    "partnership": ["partnered", "partnership", "collaboration", "alliance", "integrated with"],
+    "funding": ["raised", "funding", "series a", "series b", "series c", "investment", "valued at"],
+    "acquisition": ["acquired", "acquisition", "merger", "bought"],
+    "key_hire": ["hired", "appointed", "joined as", "named", "chief", "ceo", "cto"],
+    "pricing": ["pricing", "price", "discount", "free tier", "subscription"],
+    "customer_win": ["customer", "enterprise deal", "adopted by", "selected by", "contract"],
+    "regulatory": ["regulator", "regulatory", "compliance", "lawsuit", "investigation"]
+  },
+  "significance_terms": {
+    "high": ["billion", "acquisition", "strategic", "enterprise", "global", "exclusive", "major"],
+    "medium": ["partnership", "launch", "funding", "customer", "integration", "expansion"],
+    "low": ["preview", "beta", "pilot", "minor", "update"]
+  }
+}

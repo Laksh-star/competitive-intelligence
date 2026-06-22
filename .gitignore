@@ -4,6 +4,7 @@
 
 # Intelligence reports (contain potentially sensitive data)
 intelligence_report_*.txt
+reports/
 
 # Python
 __pycache__/

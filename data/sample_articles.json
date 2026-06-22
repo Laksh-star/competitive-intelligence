@@ -1,0 +1,23 @@
+[
+  {
+    "title": "OpenAI announces enterprise controls for ChatGPT teams",
+    "source": "Example News",
+    "url": "https://example.com/openai-enterprise-controls",
+    "published_at": "2026-06-20T09:00:00",
+    "content": "OpenAI announced new enterprise controls for ChatGPT teams, including admin policy tools, audit logs, and expanded data residency options for global customers."
+  },
+  {
+    "title": "Anthropic expands cloud partnership for Claude deployments",
+    "source": "Example Wire",
+    "url": "https://example.com/anthropic-cloud-partnership",
+    "published_at": "2026-06-19T15:30:00",
+    "content": "Anthropic expanded its cloud partnership to make Claude available to more enterprise customers. The collaboration includes joint go-to-market support and new integration templates."
+  },
+  {
+    "title": "Google DeepMind hires former enterprise AI sales leader",
+    "source": "Example Briefing",
+    "url": "https://example.com/google-deepmind-hire",
+    "published_at": "2026-06-18T11:15:00",
+    "content": "Google DeepMind appointed a former enterprise AI sales leader to accelerate Gemini adoption with regulated-industry customers."
+  }
+]
