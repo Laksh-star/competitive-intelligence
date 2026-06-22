@@ -121,11 +121,23 @@ python3 live_demo_check.py --slug live-cocoindex
 
 Then ask an agent to call:
 
-- `search_events(mode="cocoindex", competitor="Anthropic")`
+- `run_cocoindex_update(live=true, competitors="Apple,Microsoft", max_results=2, event_query="(product launch OR partnership)")`
+- `search_events(mode="cocoindex", competitor="Apple")`
 - `get_trending_competitors(mode="cocoindex", days=7)`
 - `create_brief(mode="cocoindex")`
 - `create_dashboard(mode="cocoindex")`
-- `run_cocoindex_update(live=true)`
 
 `run_cocoindex_update` refuses to run unless `live=true` is passed and all live
-credentials are present.
+credentials are present. `COMPETITORS` in `.env` is just the default; agents can
+override it per live run with `competitors="Apple,Microsoft"` or
+`competitors=["Apple", "Microsoft"]`.
+
+One-off CLI check for another market:
+
+```bash
+python3 live_demo_check.py \
+  --slug apple-microsoft-live \
+  --competitors "Apple,Microsoft" \
+  --max-results 2 \
+  --event-query "(product launch OR partnership)"
+```

@@ -240,11 +240,15 @@ python3 mcp_server.py
 ```
 
 Example live calls:
-- `search_events(mode="cocoindex", competitor="Anthropic")`
+- `run_cocoindex_update(live=true, competitors="Apple,Microsoft", max_results=2, event_query="(product launch OR partnership)")`
+- `search_events(mode="cocoindex", competitor="Apple")`
 - `get_trending_competitors(mode="cocoindex", days=7)`
 - `create_brief(mode="cocoindex")`
 - `create_dashboard(mode="cocoindex")`
-- `run_cocoindex_update(live=true)`
+
+`COMPETITORS` in `.env` is only the default. MCP callers can override it per
+run with `competitors`, either as a comma-separated string or a JSON array, so
+agents can switch from AI labs to any market category without editing files.
 
 ### 4. Verify It's Working
 

@@ -16,7 +16,14 @@ import mcp_server
 REQUIRED_ENV = ("COCOINDEX_DATABASE_URL", "TAVILY_API_KEY", "OPENAI_API_KEY")
 
 
-def run_check(slug: str = "live-cocoindex", output_dir: str | None = None) -> dict[str, Any]:
+def run_check(
+    slug: str = "live-cocoindex",
+    output_dir: str | None = None,
+    competitors: str | None = None,
+    event_query: str | None = None,
+    max_results: int | None = None,
+    search_days_back: int | None = None,
+) -> dict[str, Any]:
     env_utils.load_env()
     missing = [key for key in REQUIRED_ENV if not os.getenv(key)]
     if missing:
@@ -27,7 +34,14 @@ def run_check(slug: str = "live-cocoindex", output_dir: str | None = None) -> di
             "message": "Add missing values to .env before running live mode.",
         }
 
-    update = mcp_server.run_cocoindex_update(live=True, force=True)
+    update = mcp_server.run_cocoindex_update(
+        live=True,
+        force=True,
+        competitors=competitors,
+        event_query=event_query,
+        max_results=max_results,
+        search_days_back=search_days_back,
+    )
     if not update["ok"]:
         return {"ok": False, "stage": "cocoindex_update", "update": update}
 
@@ -52,8 +66,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run live CocoIndex demo checks.")
     parser.add_argument("--slug", default="live-cocoindex")
     parser.add_argument("--output-dir")
+    parser.add_argument("--competitors", help="Comma-separated competitors for this live run.")
+    parser.add_argument("--event-query", help="Tavily query fragment for this live run.")
+    parser.add_argument("--max-results", type=int, help="Max Tavily results per competitor.")
+    parser.add_argument("--search-days-back", type=int, help="Limit Tavily recency window.")
     args = parser.parse_args()
-    result = run_check(slug=args.slug, output_dir=args.output_dir)
+    result = run_check(
+        slug=args.slug,
+        output_dir=args.output_dir,
+        competitors=args.competitors,
+        event_query=args.event_query,
+        max_results=args.max_results,
+        search_days_back=args.search_days_back,
+    )
     print(json.dumps(result, indent=2))
     raise SystemExit(0 if result["ok"] else 1)
 

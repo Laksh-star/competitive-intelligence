@@ -74,7 +74,12 @@ class LocalIntelTests(unittest.TestCase):
         trends = mcp_server.get_trending_competitors(limit=3)
         brief = mcp_server.create_brief(slug="mcp-brief")
         dashboard = mcp_server.create_dashboard(slug="mcp-dashboard")
-        guarded_live = mcp_server.run_cocoindex_update(live=False)
+        guarded_live = mcp_server.run_cocoindex_update(
+            live=False,
+            competitors="Apple, Microsoft",
+            event_query="(product launch OR partnership)",
+            max_results=2,
+        )
 
         self.assertEqual(analysis["mode"], "local")
         self.assertGreaterEqual(search["matched_events"], 1)
@@ -82,6 +87,25 @@ class LocalIntelTests(unittest.TestCase):
         self.assertTrue(Path(brief["path"]).exists())
         self.assertTrue(Path(dashboard["path"]).exists())
         self.assertFalse(guarded_live["ok"])
+        self.assertEqual(guarded_live["effective_config"]["competitors"], "Apple,Microsoft")
+
+    def test_live_cocoindex_argument_overrides(self):
+        env = {"COMPETITORS": "OpenAI", "MAX_RESULTS_PER_COMPETITOR": "1"}
+
+        updated = mcp_server._apply_live_overrides(
+            env,
+            competitors=["Apple", "Microsoft"],
+            event_query="(funding OR launch)",
+            max_results=3,
+            search_days_back=14,
+            refresh_interval_seconds=120,
+        )
+
+        self.assertEqual(updated["COMPETITORS"], "Apple,Microsoft")
+        self.assertEqual(updated["EVENT_QUERY"], "(funding OR launch)")
+        self.assertEqual(updated["MAX_RESULTS_PER_COMPETITOR"], "3")
+        self.assertEqual(updated["SEARCH_DAYS_BACK"], "14")
+        self.assertEqual(updated["REFRESH_INTERVAL_SECONDS"], "120")
 
     def test_agent_demo_generates_transcript(self):
         with tempfile.TemporaryDirectory() as tmp:

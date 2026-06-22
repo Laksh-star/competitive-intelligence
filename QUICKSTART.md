@@ -96,9 +96,12 @@ cocoindex update main -f
 
 Then agents can call:
 
-- `search_events(mode="cocoindex", competitor="OpenAI")`
+- `run_cocoindex_update(live=true, competitors="Apple,Microsoft", max_results=2, event_query="(product launch OR partnership)")`
+- `search_events(mode="cocoindex", competitor="Apple")`
 - `get_trending_competitors(mode="cocoindex", days=7)`
-- `run_cocoindex_update(live=true)`
+
+The `.env` competitor list is only a default. Agents can pass `competitors` on
+each live run to target any market or peer set.
 
 ## Troubleshooting
 
